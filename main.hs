@@ -2,10 +2,13 @@
 module Main where
 
 import Control.Monad
+import Control.Monad.IO.Class
 import Control.Applicative
 
+import Data.Functor
+
 import qualified SDL
-import Linear (V4(..))
+import Linear (V2(..),V4(..))
 
 
 data Point = Point { x :: Double
@@ -20,6 +23,7 @@ type Radius = Double
 data Circle = Circle { r :: Radius
                      -- cp :: Point 0 0
                      }
+
 
 infixl 6 .+
 (.+) :: Point -> Point -> Point
@@ -54,7 +58,6 @@ intersection c@(Circle r) l
               diff = Point (((signum (dy l) * (dx l) * sqrt disc)) / d2) ((abs (dy l)* sqrt disc) / d2)
               
 
-
 simulationLoop :: SDL.Renderer -> IO ()
 simulationLoop renderer = do
     events <- SDL.pollEvents
@@ -70,11 +73,16 @@ simulationLoop renderer = do
     SDL.rendererDrawColor renderer SDL.$= V4 0 0 0 255
     SDL.clear renderer
 
-
+    SDL.rendererDrawColor renderer SDL.$= V4 255 255 255 255
+    SDL.drawLine renderer (SDL.P $ V2 0 0) (SDL.P $ V2 64 64)
+    render renderer $ Line (Point 10 24) (Point 100 64)
 
     SDL.present renderer
 
     unless qPressed $ simulationLoop renderer
+
+renderCircle (Circle r) = 
+    where points = map (\t->SDL.P $ V2 (r * cos t) (r * sin t)) $ map (((2*pi)/256)*) [0..255]
 
 main :: IO ()
 main = do
